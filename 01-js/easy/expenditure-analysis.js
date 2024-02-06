@@ -14,7 +14,23 @@
 */
 
 function calculateTotalSpentByCategory(transactions) {
-  return [];
+  const categories = {}; // Created a empty object
+
+  for (let i = 0; i < transactions.length; i++) {
+    const category = transactions[i]["category"];  // Extracted category
+    const price = transactions[i]["price"];  // Extracted Price 
+    if (!categories[category]) {  // Checking if category key is there or not (in categories )
+      // if not , then creating one and assigning value which is also object
+      categories[category] = {
+        category,
+        totalSpent: price,
+      };
+    } else {
+      // otherwise just updaing total spent 
+      categories[category].totalSpent += price;
+    }
+  }
+  return Object.values(categories); // Returning only value from the category object 
 }
 
 module.exports = calculateTotalSpentByCategory;
