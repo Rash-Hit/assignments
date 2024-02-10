@@ -40,70 +40,121 @@
   Testing the server - run `npm run test-todoServer` command in terminal
  */
 const express = require("express");
+const fs = require("fs");
 const bodyParser = require("body-parser");
 
 const app = express();
 
 app.use(bodyParser.json());
 
-const todos = [];
-
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
 app.get("/todos", (req, res) => {
-  res.status(200).json(todos);
+  fs.readFile("todos.json", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.status(200).json(JSON.parse(data));
+    }
+  });
 });
 
 app.get("/todos/:id", (req, res) => {
   const id = req.params.id;
-  const idIdx = todos.findIndex((todo) => {
-    return todo.id == id;
+  fs.readFile("todos.json", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const todos = JSON.parse(data);
+      const idIdx = todos.findIndex((todo) => {
+        return todo.id == id;
+      });
+      const todo = todos[idIdx];
+      if (idIdx != -1) {
+        res.status(200).json(todo);
+      } else {
+        res.status(404).send("Not Found");
+      }
+    }
   });
-  const todo = todos[idIdx];
-  if (idIdx != -1) {
-    res.status(200).json(todo);
-  } else {
-    res.status(404).send("Not Found");
-  }
 });
 
 app.post("/todos", (req, res) => {
   const { title, description } = req.body;
   const id = Math.floor(Math.random() * 1000);
-  todos.push({
-    title,
-    description,
-    id,
+  fs.readFile("todos.json", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const todos = JSON.parse(data);
+      todos.push({
+        title,
+        description,
+        id,
+      });
+      fs.writeFile("todos.json", JSON.stringify(todos), (err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          res.status(201).json({ id });
+        }
+      });
+    }
   });
-  res.status(201).json({id});
 });
 
 app.put("/todos/:id", (req, res) => {
   const id = req.params.id;
-  const idIdx = todos.findIndex((todo) => {
-    return todo.id == id;
+  fs.readFile("todos.json", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const todos = JSON.parse(data);
+      const idIdx = todos.findIndex((todo) => {
+        return todo.id == id;
+      });
+      todos[idIdx].title = req.body.title;
+      if (idIdx != -1) {
+        fs.writeFile("todos.json", JSON.stringify(todos), (err) => {
+          if (err) {
+            console.log(err);
+          } else {
+            res.status(200).json(todos[idIdx]);
+          }
+        });
+      } else {
+        res.status(404).send("Not Found");
+      }
+    }
   });
-  todos[idIdx].title = req.body.title;
-  if (idIdx != -1) {
-    res.status(200).json(todos[idIdx]);
-  } else {
-    res.status(404).send("Not Found");
-  }
 });
 
 app.delete("/todos/:id", (req, res) => {
   const id = req.params.id;
-  const idIdx = todos.findIndex((todo) => {
-    return todo.id == id;
+  fs.readFile("todos.json", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const todos = JSON.parse(data);
+      const idIdx = todos.findIndex((todo) => {
+        return todo.id == id;
+      });
+      todos.splice(idIdx, 1);
+      if (idIdx != -1) {
+        fs.writeFile("todos.json", JSON.stringify(todos), (err) => {
+          if (err) {
+            console.log(err);
+          } else {
+            res.status(200).send("Item found and deleted");
+          }
+        });
+      } else {
+        res.status(404).send("Not Found");
+      }
+    }
   });
-  todos.splice(idIdx, 1);
-  if (idIdx != -1) {
-    res.status(200).send("Item found and deleted");
-  } else {
-    res.status(404).send("Not Found");
-  }
 });
 
 app.get("/*", (req, res) => {
