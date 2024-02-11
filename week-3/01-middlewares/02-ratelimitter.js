@@ -16,8 +16,25 @@ setInterval(() => {
     numberOfRequestsForUser = {};
 }, 1000)
 
-app.get('/user', function(req, res) {
-  res.status(200).json({ name: 'john' });
+function rateLimiter(req, res, next) {
+  const userId = req.headers["user-id"];
+  if (!numberOfRequestsForUser.hasOwnProperty(userId)) {
+    numberOfRequestsForUser[userId] = 1;
+  } else {
+    numberOfRequestsForUser[userId] = numberOfRequestsForUser[userId] + 1;
+  }
+
+  if (numberOfRequestsForUser[userId] > 5) {
+    res.status(404).send("no entry");
+  } else {
+    next();
+  }
+}
+
+app.use(rateLimiter);
+
+app.get("/user", function (req, res) {
+  res.status(200).json({ name: "john" });
 });
 
 app.post('/user', function(req, res) {
