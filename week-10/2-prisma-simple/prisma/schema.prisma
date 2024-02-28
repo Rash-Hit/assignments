@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgres://postgres:mysecretpassword@localhost/postgres"
+  url      = "REPLACE_DB_URL_HERE"
 }
 
 model User {
@@ -24,3 +24,5 @@ model Todo {
   description String?
   done        Boolean @default(false)
 }
+
+
